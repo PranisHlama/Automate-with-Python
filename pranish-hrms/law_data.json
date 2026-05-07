@@ -1,0 +1,54 @@
+{
+  "law_title": {
+    "question": "What is the title of the labor regulation?",
+    "answer": "Shram Niyamawali, 2075 (Labor Rules, 2018)"
+  },
+  "parent_act": {
+    "question": "Which act does the Labor Rules, 2018 belong to?",
+    "answer": "Shram Ain, 2074 (Labor Act, 2017)"
+  },
+  "jurisdiction": {
+    "question": "Which country does this labor law apply to?",
+    "answer": "Nepal"
+  },
+  "key_provisions": {
+    "probation_period": {
+      "question": "What is the probation period under the Labor Rules, 2018?",
+      "answer": "The probation period is 6 months to evaluate the worker's performance."
+    },
+    "working_hours": {
+      "question": "What are the standard working hours and overtime rules under the Labor Rules, 2018?",
+      "answer": "Standard working hours are 8 hours per day and 48 hours per week. Overtime is limited to 4 hours daily and 24 hours weekly, and overtime pay is 1.5 times the basic remuneration."
+    },
+    "leave_entitlements": {
+      "question": "What leave entitlements are provided under the Labor Rules, 2018?",
+      "answer": "Workers are entitled to 1 weekly leave day, 13 public holidays per year (14 for women), 1 home leave for every 20 days worked, 12 sick leaves with full pay, 98 days maternity leave (60 paid), 15 days paternity leave with full pay, and 13 days mourning leave with full pay."
+    },
+    "remuneration_and_benefits": {
+      "question": "What remuneration and benefits are provided under the Labor Rules, 2018?",
+      "answer": "The minimum wage is reviewed every 2 years by the Ministry, and workers receive a festival allowance equal to one month's basic remuneration annually."
+    },
+    "social_security_fund_contributions": {
+      "question": "What are the Social Security Fund contribution rates under the Labor Rules, 2018?",
+      "answer": "Employees contribute 11% and employers contribute 20% of the basic remuneration, making a total contribution of 31%. Components include Provident Fund (10%), Gratuity (8.33%), and Social Security (1.67%)."
+    },
+    "misconduct_and_disciplinary_actions": {
+      "question": "What disciplinary actions can be taken for misconduct under the Labor Rules, 2018?",
+      "answer": "Possible disciplinary actions include warning, deduction of one day's remuneration, withholding annual increment for one year, suspension up to 3 months, and termination from service."
+    }
+  },
+  "regulatory_bodies": [
+    {
+      "question": "What is the role of the Ministry of Labour, Employment and Social Security?",
+      "answer": "The Ministry is responsible for policy making and minimum wage determination."
+    },
+    {
+      "question": "What is the role of the Department of Labour and Occupational Safety?",
+      "answer": "The Department is responsible for implementation and supervision of labor laws."
+    },
+    {
+      "question": "What is the role of the Labour Court?",
+      "answer": "The Labour Court adjudicates labor disputes."
+    }
+  ]
+}
