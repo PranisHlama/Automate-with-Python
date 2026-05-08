@@ -5,7 +5,6 @@ import json
 import faiss
 import ollama
 from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
 
 st.set_page_config(page_title="University Chat Assistant")
 st.title("Pranish Uni Assistant")
@@ -13,9 +12,6 @@ st.title("Pranish Uni Assistant")
 with open("uni_data.json", "r", encoding="utf-8") as file:
     uni_data = json.load(file)
 
-print("before logic: \n",uni_data)
-
-# Load Data
 rows = []
 
 for key, value in uni_data.items():
@@ -42,38 +38,39 @@ for key, value in uni_data.items():
                 "question": item["question"],
                 "answer": item["answer"]
             })
-        
-print("After logic:\n", rows)
 
 df_uni = pd.DataFrame(rows)
 
 # Load Embedding Model
 @st.cache_resource
 def load_model():
-    return SentenceTransformer('all-distilroberta-v1')
+    return SentenceTransformer('all-MiniLM-L6-v2')
 
 model = load_model()
 
 
-# Create Embedding
-def create_embeddings():
+# Build FAISS Index
+@st.cache_resource
+def build_index():
     questions = df_uni["question"].tolist()
     embeddings = model.encode(questions).astype("float32")
-    return embeddings
 
+    index = faiss.IndexFlatL2(embeddings.shape[1])
+    index.add(embeddings)
 
-# Build FAISS Index
-question_embeddings = create_embeddings()
-dimension = question_embeddings.shape[1]
-index = faiss.IndexFlatL2(dimension)
-index.add(np.array(question_embeddings).astype("float32"))
+    return index, embeddings
 
+index, question_embeddings = build_index()
+
+@st.cache_data
+def get_embedding(text):
+    return model.encode([text]).astype("float32")
 
 # RAG Function
 def rag_answer(user_query):
     user_embedding = model.encode([user_query]).astype("float32")
-    # Retrieve top 3 matches
-    D, I = index.search(user_embedding, 3)
+    # Retrieve top 2 matches
+    D, I = index.search(user_embedding, 2)
 
     # Build Context
     contexts = []
@@ -106,8 +103,6 @@ def rag_answer(user_query):
 
     
     return response["message"]["content"], contexts
-    # best_match_index = I[0][0]
-    # return df_uni.loc[best_match_index, "answer"]
 
 # Streamlit UI
 if "chat" not in st.session_state:
@@ -117,15 +112,12 @@ with st.form("question_form"):
     user_input = st.text_input("Ask your question:")
     submitted = st.form_submit_button("Get Answer")
 
-# user_input = st.text_input("Ask your question:")
 
 if submitted:
     if user_input:
         answer, sources = rag_answer(user_input)
         st.session_state.chat.append(("user", user_input))
         st.session_state.chat.append(("bot", answer))
-        
-        # st.subheader("Retrieved Context")
         for s in sources:
             st.info(s)
 
