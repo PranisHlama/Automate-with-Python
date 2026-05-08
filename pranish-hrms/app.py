@@ -6,12 +6,49 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 st.set_page_config(page_title="Nepal law Assistant")
-st.title("Pranish labour Law")
+st.title("Bikash labour Law")
 
 with open("law_data.json", "r", encoding="utf-8") as file:
     law_data = json.load(file)
 
-df_law = pd.DataFrame(law_data)
+# Convert nested JSON into rows
+rows = []
+
+for key, value in law_data.items():
+
+    # Normal question-answer
+    if isinstance(value, dict):
+
+        if "question" in value and "answer" in value:
+            rows.append({
+                "section": key,
+                "question": value["question"],
+                "answer": value["answer"]
+            })
+
+        else:
+            # Nested dictionaries
+            for subkey, subvalue in value.items():
+
+                if isinstance(subvalue, dict) and "question" in subvalue:
+                    rows.append({
+                        "section": subkey,
+                        "question": subvalue["question"],
+                        "answer": subvalue["answer"]
+                    })
+
+    # Lists like regulatory bodies
+    elif isinstance(value, list):
+        for item in value:
+            rows.append({
+                "section": key,
+                "question": item["question"],
+                "answer": item["answer"]
+            })
+print(rows)
+# Create dataframe
+df_law = pd.DataFrame(rows)
+
 
 @st.cache_resource
 def load_model():
