@@ -1,3 +1,6 @@
+import streamlit as st
+import joblib
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -12,6 +15,9 @@ warnings.filterwarnings("ignore")
 pd.set_option('future.no_silent_downcasting', True)
 pd.options.mode.copy_on_write = "warn"
 
+
+st.set_page_config(page_title="Salary Prediction")
+st.title("Pranish's Employee Salary Prediction Application")
 
 def add_line(x0=0, y0=0, x1=0, y1=0, 
              line_color='#00DFA2', font_color = "#3C486B", 
@@ -56,21 +62,55 @@ def custom_layout(title_size = 28, hover_font_size = 16, showlegend=False):
         }
     )
 
+page = st.sidebar.selectbox(
+    "Choose Section",
+    [
+        "Dataset",
+        "EDA",
+        "Salary Analysis",
+        "Prediction"
+    ]
+)
 
+def sidebar_layout():
+    if page == "Dataset":
+        st.dataframe(df)
+
+    elif page == "EDA":
+        st.plotly_chart(age_fig)
+
+    elif page == "Salary Analysis":
+        st.plotly_chart(salary_fig)
+
+    elif page == "Prediction":
+        st.plotly_chart(predicted_salary)
 
 df = pd.read_csv('employee_salary_dataset.csv')
-df.info()
-print("mean values are: \n", df.describe().T)
+# df.info()
+# print("mean values are: \n", df.describe().T)
 
-print("isna sum is: \n", df.isna().sum())
-print(df[df["Age"].isna()])
+st.subheader("Dataset Overview")
+st.write("Dataset Shape:", df.shape)
+
+st.dataframe(df.head())
+
+st.subheader("Statistical Summary")
+st.dataframe(df.describe().T)
+
+# print("isna sum is: \n", df.isna().sum())
+# print(df[df["Age"].isna()])
+
+st.subheader("Missing Values")
+st.dataframe(df.isna().sum().reset_index().rename(
+    columns={"index": "Column",0:"Missing Values"}
+))
 
 df.dropna(inplace=True)
-print("isna sum is: \n", df.isna().sum())
+# print("isna sum is: \n", df.isna().sum())
 
-print("Duplicated Values: \n", df.duplicated().sum())
+# print("Duplicated Values: \n", df.duplicated().sum())
 
-print(df[df.duplicated()].head(15))
+# print(df[df.duplicated()].head(15))
 df.drop_duplicates(inplace=True)
 
 df.reset_index(inplace=True, drop=True)
@@ -82,17 +122,19 @@ median_of_age = df["Age"].median()
 
 fig = px.box(
     y = df["Age"],
-    title = "Ages Distribution",
+    title = "Age Distribution(Boxplot)",
     template = "plotly_dark",
     labels = {"y", "Age"}
 )
 custom_layout()
+
+boxplot_fig = st.plotly_chart(fig, use_container_width=True)
 # iplot(fig)
 
 fig = px.histogram(
     df["Age"],
     nbins=25,
-    title="Age Distribution",
+    title="Age Distribution(Histogram)",
     template="plotly_dark",
     labels = {"value": "Age"}
 )
@@ -113,6 +155,7 @@ add_line(x0=median_of_age, y0=0, x1=median_of_age, y1=30+2, line_color='#FFE5F1'
          font_color="#fff", xposition="right", text="Median")
 
 # iplot(fig)
+age_fig = st.plotly_chart(fig, use_container_width=True)
 
 # Gender Column
 gender = df["Gender"].value_counts(normalize=1) * 100
@@ -141,6 +184,7 @@ fig.update_traces(
 )
 
 # iplot(fig)
+gender_fig = st.plotly_chart(fig, use_container_width=True)
 
 # Education Column
 
@@ -170,6 +214,7 @@ fig.update_traces(
 )
 
 # iplot(fig)
+edu_fig = st.plotly_chart(fig, use_container_width=True)
 
 # Experience Column
 fig = px.box(
@@ -181,6 +226,7 @@ fig = px.box(
 custom_layout()
 
 # iplot(fig)
+st.plotly_chart(fig, use_container_width=True)
 
 # Salary Column
 fig = px.box(
@@ -193,6 +239,7 @@ fig = px.box(
 custom_layout(hover_font_size=13)
 
 # iplot(fig)
+exp_fig = st.plotly_chart(fig, use_container_width=True)
 
 
 # What is the average salary of each gender??
@@ -224,6 +271,7 @@ fig.update_traces(
 )
 
 # iplot(fig)
+salary_fig = st.plotly_chart(fig, use_container_width=True)
 
 
 # Salary based on education level??
@@ -255,6 +303,7 @@ fig.update_traces(
 )
 
 # iplot(fig)
+salary_edu_fig = st.plotly_chart(fig, use_container_width=True)
 
 # How does years of experience influence salary??
 def grouping_exp(exp):
@@ -296,6 +345,7 @@ fig.update_traces(
 )
 
 # iplot(fig)
+exp_salary_fig = st.plotly_chart(fig, use_container_width=True)
 
 
 # Correlation
@@ -319,6 +369,7 @@ fig.update_layout(
     }
 )
 # iplot(fig)
+corr_fig = st.plotly_chart(fig, use_container_width=True)
 
 
 
@@ -342,6 +393,7 @@ fig.update_layout(
     }
 )
 # iplot(fig)
+scatterplot_fig = st.plotly_chart(fig, use_container_width=True)
 
 # Building the model
 
@@ -383,10 +435,19 @@ predected_df = pd.DataFrame(d)
 print(predected_df.head())
 
 score = r2_score(y_test, predicted_salary)*100
-print(f"Model Score: {np.round(score, 2)}%")
+# print(f"Model Score: {np.round(score, 2)}%")
 
 rmse = np.sqrt(mean_squared_error(y_test, predicted_salary))
-print(f"Error Ratio: {rmse:.3f}")
+# print(f"Error Ratio: {rmse:.3f}")
+
+###### Model Metrics 
+st.subheader("Model Performance")
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric("R^2 Score", f"{score:.2f}%")
+col2.metric("RMSE", f"{rmse:.2f}")
+col3.metric("CV Score", f"{np.mean(score)*100:.2f}%")
 
 
 fig = px.scatter(
@@ -409,5 +470,79 @@ fig.update_layout(
         }
     }
 )
-iplot(fig)
+# iplot(fig)
+st.plotly_chart(fig, use_container_width=True)
 
+sidebar_layout()
+
+
+# Salary Prediction Input
+st.sidebar.header("Salary Prediction")
+
+age = st.sidebar.number_input(
+    "Age",
+    min_value=19,
+    max_value=65,
+    value=25
+)
+
+experience = st.sidebar.number_input(
+    "Years of Experience",
+    min_value=0,
+    max_value=40,
+    value=2
+)
+
+education = st.sidebar.selectbox(
+    "Education Level",
+    [
+        "Bachelor's",
+        "Master's",
+        "PhD"
+    ]
+)
+
+input_df = pd.DataFrame({
+    "Age": [age],
+    "Years of Experience": [experience],
+    "Education Level_Master's": [0],
+    "Education Level_PhD": [0]
+})
+
+if education == "Master's":
+    input_df["Education Level_Master's"] = 1
+
+elif education == "PhD":
+    input_df["Education Level_PhD"] = 1
+
+# Predict Salary
+if st.sidebar.button("Predict Salary"):
+    prediction = rf.predict(input_df)[0]
+
+    st.success(
+        f"Predicted Salary: ${prediction:,.2f}"
+    )
+
+# Feature Importance Chart
+importance = pd.DataFrame({
+    "Feature": X.columns,
+    "Importance": rf.feature_importances_
+})
+
+importance = importance.sort_values(
+    by = "Importance",
+    ascending = False
+)
+fig = px.bar(
+    importance,
+    x="Importance",
+    y="Feature",
+    orientation="h",
+    title="Feature Importance"
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
+joblib.dump(rf, "salary_model.pk1")
+
+model = joblib.load("salary_model.pk1")
