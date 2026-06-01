@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: calcli
+Version: 6.9
+Summary: A CLI Calculator using argparse
+Author: Pranish Lama
+Requires-Python: >=3.6
+Dynamic: author
+Dynamic: requires-python
+Dynamic: summary

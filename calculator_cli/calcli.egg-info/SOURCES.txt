@@ -1,0 +1,9 @@
+setup.py
+calcli/__init__.py
+calcli/__main__.py
+calcli/calculator.py
+calcli.egg-info/PKG-INFO
+calcli.egg-info/SOURCES.txt
+calcli.egg-info/dependency_links.txt
+calcli.egg-info/entry_points.txt
+calcli.egg-info/top_level.txt

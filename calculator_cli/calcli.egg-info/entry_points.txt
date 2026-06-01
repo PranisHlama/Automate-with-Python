@@ -1,0 +1,2 @@
+[console_scripts]
+calcli = calcli.__main__:main
