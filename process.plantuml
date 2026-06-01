@@ -1,0 +1,83 @@
+@startuml
+title University Chat Assistant - Technical Process Flow
+
+start
+
+:Load uni_data.json;
+:Flatten nested JSON into Q&A rows;
+
+:Load SentenceTransformer model;
+:Extract all questions from rows;
+
+:Encode questions into embeddings;
+:Normalize embeddings;
+:Create FAISS IndexFlatIP index;
+:Add question embeddings to FAISS index;
+
+:Initialize session state;
+note right
+chat
+chat_sessions
+current_chat_index
+end note
+
+:Render sidebar chat history;
+
+if (User clicks New Chat?) then (yes)
+  if (Current chat exists?) then (yes)
+    :Save current chat session;
+  endif
+  :Clear current chat;
+  :Rerun app;
+endif
+
+if (User clicks old chat?) then (yes)
+  :Load selected chat messages;
+  :Rerun app;
+endif
+
+if (User clicks Clear History?) then (yes)
+  :Clear all chat state;
+  :Rerun app;
+endif
+
+:Display existing chat messages;
+
+if (User enters question?) then (yes)
+  :Append user message to chat;
+  :Display user message;
+
+  :Encode user query;
+  :Search FAISS index for top 2 matching questions;
+
+  if (Best similarity score < 0.45?) then (yes)
+    :Return fallback answer;
+    note right
+    "I don't have enough information
+    in university data."
+    end note
+  else (no)
+    :Build context from matched Q&A rows;
+    :Create RAG prompt with rules and context;
+    :Send prompt to Ollama Mistral model;
+    :Receive concise answer;
+  endif
+
+  :Display assistant answer;
+
+  if (Sources exist?) then (yes)
+    :Show Sources used expander;
+  endif
+
+  :Append assistant answer to chat;
+
+  if (Existing chat session selected?) then (yes)
+    :Update saved chat session;
+  endif
+
+  :Rerun app;
+endif
+
+stop
+
+@enduml
