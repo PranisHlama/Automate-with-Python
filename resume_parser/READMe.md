@@ -65,3 +65,18 @@ The final system should be capable of:
 ## Conclusion
 
 The Resume Parser AI Project serves as an excellent introductory project for learning Artificial Intelligence, Natural Language Processing (NLP), and Machine Learning. It demonstrates how AI can be applied to solve real-world recruitment challenges by automating resume screening and candidate evaluation.
+
+## How to run project:
+To get the actual CSV file:
+```
+sudo apt install git-lfs
+git lfs install
+git lfs pull
+```
+After that, **Resume.csv** should become the real 54 MB CSV file.
+
+Install Spacy + model:
+```
+pip install spacy
+python -m spacy download en_core_web_sm
+```
