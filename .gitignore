@@ -11,3 +11,6 @@ __pycache__/
 calcli.egg-info/
 
 tasks.txt
+
+resume_parser/punkt_tab
+resume_parser/app.py
