@@ -4,8 +4,11 @@ import re
 
 import nltk
 from nltk.corpus import stopwords
-
 import spacy
+
+from sentence_transformers import SentenceTransformer
+from sklearn.cluster import KMeans
+from sklearn.metrics.pairwise import cosine_similarity
 
 nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
@@ -54,3 +57,60 @@ df['Resume'] = lemmatize_batch(df["Resume"].fillna("").tolist())
 df['tokens'] = df['Resume'].apply(lambda x: x.split())
 
 print(df.head(10))
+
+# Model Development
+model = SentenceTransformer(
+    "all-MiniLM-L6-v2"
+)
+
+print(df['tokens'])
+
+# Skill Embeddings
+skills = [
+    "strategic planning",
+    "organizational development",
+    "SAP",
+    "IBM",
+    "professional",
+    "business analyst",
+    "engineer",
+    "leadership",
+    "cybersecurity",
+    "ui/ux",
+    "python",
+    "django",
+    "react",
+    "machine learning",
+    "payroll"
+]
+
+embeddings = model.encode(skills)
+
+# Group Skills together
+KMeans = KMeans(
+    n_clusters=5,
+    random_state=42
+)
+
+labels = KMeans.fit_predict(embeddings)
+
+for skill, cluster in zip(skills, labels):
+    print(skill, cluster)
+
+# Identify domain-specific competencies
+clusters = {}
+
+for skill, label in zip(skills, labels):
+    clusters.setdefault(int(label), []).append(skill)
+
+print(clusters)
+
+resume_embedding_1 = model.encode(df['Resume'].iloc[0])
+resume_embedding_2 = model.encode(df['Resume'].iloc[1])
+
+similarity = cosine_similarity(
+    [resume_embedding_1],
+    [resume_embedding_2]
+)
+
+print(similarity)
