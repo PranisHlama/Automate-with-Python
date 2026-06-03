@@ -65,34 +65,27 @@ model = SentenceTransformer(
 
 print(df['tokens'])
 
-# Skill Embeddings
-skills = [
-    "strategic planning",
-    "organizational development",
-    "SAP",
-    "IBM",
-    "professional",
-    "business analyst",
-    "engineer",
-    "leadership",
-    "cybersecurity",
-    "ui/ux",
-    "python",
-    "django",
-    "react",
-    "machine learning",
-    "payroll"
-]
+all_tokens = df['tokens'].explode()
 
-embeddings = model.encode(skills)
+# Skill Embeddings
+skills = (
+    all_tokens
+    .value_counts()
+    .head(500)
+    .index
+    .tolist()
+)
+
+
+skill_embeddings = model.encode(skills)
 
 # Group Skills together
-KMeans = KMeans(
-    n_clusters=5,
+kmeans = KMeans(
+    n_clusters=10,
     random_state=42
 )
 
-labels = KMeans.fit_predict(embeddings)
+labels = kmeans.fit_predict(skill_embeddings)
 
 for skill, cluster in zip(skills, labels):
     print(skill, cluster)
@@ -105,12 +98,34 @@ for skill, label in zip(skills, labels):
 
 print(clusters)
 
-resume_embedding_1 = model.encode(df['Resume'].iloc[0])
-resume_embedding_2 = model.encode(df['Resume'].iloc[1])
+#Compare all resumes
 
-similarity = cosine_similarity(
-    [resume_embedding_1],
-    [resume_embedding_2]
+resume_embeddings = model.encode(
+    df['Resume'].tolist(),
+    show_progress_bar= True
 )
 
-print(similarity)
+similarity_matrix = cosine_similarity(
+    resume_embeddings
+)
+print(similarity_matrix.shape)
+
+# Find most similar resumes 
+resume_index = 0
+
+scores = similarity_matrix[resume_index]
+
+similar_indices = np.argsort(scores)[::-1]
+
+# Display top matches
+for idx in similar_indices[1:6]:
+    print(
+        f"Resume ID: {df.iloc[idx]['ID']}"
+    )
+    print(
+        f"Category: {df.iloc[idx]['Category']}"
+    )
+    print(
+        f"Similarity: {scores[idx]:.3f}"
+    )
+    print("-" * 40)

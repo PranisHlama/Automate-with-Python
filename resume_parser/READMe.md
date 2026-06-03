@@ -38,7 +38,7 @@ After preprocessing, a clustering algorithm can be developed to:
 
 The model should consider words that are similar in meaning and context rather than exact keyword matches.
 
-## Resume Scoring System
+## Resume Scoring System(Incomplete)
 
 A scoring mechanism can be implemented to evaluate candidate suitability for a specific job role. The system can assign a score ranging from:
 
@@ -75,7 +75,7 @@ git lfs pull
 ```
 After that, **Resume.csv** should become the real 54 MB CSV file.
 
-Install Spacy + model:
+## Install Spacy + model:
 ```
 pip install spacy
 python -m spacy download en_core_web_sm
