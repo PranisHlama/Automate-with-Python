@@ -17,14 +17,6 @@ df2['label'] = 'fake'
 
 df = pd.concat([df1, df2], ignore_index=False)
 
-# print(df1.isnull().sum())
-# df1.dropna()
-
-# print("Fake:\n", df1.head(10))
-# print(df1.shape)
-# df1.info()
-# print(df1.sample(5)) # Gives random Rows
-# print(df1.dtypes)
 
 print(df.isnull().sum())
 
@@ -154,6 +146,27 @@ trigram_df = get_common_phrases(df["text"], ngram_range=(3, 3), top_n=20)
 
 print("Trigram Range: \n", trigram_df)
 
+def remove_duplicates(df, subset_column=None):
+    if subset_column:
+        duplicate_count = df.duplicated(subset=[subset_column]).sum()
+        print(f"Duplicate records based on '{subset_column}': {duplicate_count}")
+
+        df = df.drop_duplicates(subset=[subset_column])
+    else:
+        duplicate_count = df.duplicated().sum()
+        print(f"Exact duplicate rows: {duplicate_count}")
+
+        df = df.drop_duplicates()
+
+    print("Duplicates removed successfully.")
+    print("New dataset shape:", df.shape)
+
+    return df
+df = remove_duplicates(df, subset_column="text")
+
+print("Missing values:")
+print(df.isnull().sum())
+
 fake_phrases = get_common_phrases(
     df[df['label'] == 'fake']['text'],
     ngram_range=(2, 2),
@@ -170,3 +183,13 @@ print("Fake Phrases: \n",fake_phrases)
 
 print("Real News Common Phrases")
 print("Real Phrases: \n", real_phrases)
+
+df["text"] = df["text"].fillna("")
+df["title"] = df["title"].fillna("")
+df["content"] = df["title"] + " " + df["text"]
+
+text_column = "content"
+df[text_column] = df[text_column].astype(str)
+df[text_column] = df[text_column].str.lower()
+
+df.to_csv("./news_dataset/cleaned_fake_real_news.csv", index=False)
