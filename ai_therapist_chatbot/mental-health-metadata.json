@@ -1,0 +1,761 @@
+{
+  "@context": {
+    "@language": "en",
+    "@vocab": "https://schema.org/",
+    "citeAs": "cr:citeAs",
+    "column": "cr:column",
+    "conformsTo": "dct:conformsTo",
+    "cr": "http://mlcommons.org/croissant/",
+    "data": { "@id": "cr:data", "@type": "@json" },
+    "dataBiases": "cr:dataBiases",
+    "dataCollection": "cr:dataCollection",
+    "dataType": { "@id": "cr:dataType", "@type": "@vocab" },
+    "dct": "http://purl.org/dc/terms/",
+    "extract": "cr:extract",
+    "field": "cr:field",
+    "fileProperty": "cr:fileProperty",
+    "fileObject": "cr:fileObject",
+    "fileSet": "cr:fileSet",
+    "format": "cr:format",
+    "includes": "cr:includes",
+    "isEnumeration": "cr:isEnumeration",
+    "isLiveDataset": "cr:isLiveDataset",
+    "jsonPath": "cr:jsonPath",
+    "key": "cr:key",
+    "md5": "cr:md5",
+    "parentField": "cr:parentField",
+    "path": "cr:path",
+    "personalSensitiveInformation": "cr:personalSensitiveInformation",
+    "recordSet": "cr:recordSet",
+    "references": "cr:references",
+    "regex": "cr:regex",
+    "repeated": "cr:repeated",
+    "replace": "cr:replace",
+    "sc": "https://schema.org/",
+    "separator": "cr:separator",
+    "source": "cr:source",
+    "subField": "cr:subField",
+    "transform": "cr:transform",
+    "wd": "https://www.wikidata.org/wiki/"
+  },
+  "alternateName": "510k\u002B mental health conversations, dialogues, and support interactions for LLMs",
+  "citeAs": "10.34740/kaggle/dsv/12120624",
+  "conformsTo": "http://mlcommons.org/croissant/1.0",
+  "license": {
+    "@type": "sc:CreativeWork",
+    "name": "Attribution 4.0 International (CC BY 4.0)",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "distribution": [
+    {
+      "contentUrl": "https://www.kaggle.com/api/v1/datasets/download/nguyenletruongthien/mental-health?datasetVersionNumber=1",
+      "contentSize": "92.371 MB",
+      "md5": "h4p4lSU82FhSLYyMthPccw==",
+      "encodingFormat": "application/zip",
+      "@id": "archive.zip",
+      "@type": "cr:FileObject",
+      "name": "archive.zip",
+      "description": "Archive containing all the contents of the Mental Health Conversational AI Training Dataset dataset"
+    },
+    {
+      "includes": "*.json",
+      "containedIn": { "@id": "archive.zip" },
+      "encodingFormat": "application/json",
+      "@id": "application-json_fileset",
+      "@type": "cr:FileSet",
+      "name": "application/json files",
+      "description": "application/json files contained in archive.zip"
+    },
+    {
+      "contentUrl": "conversations_training.csv",
+      "containedIn": { "@id": "archive.zip" },
+      "encodingFormat": "text/csv",
+      "@id": "conversations_training.csv_fileobject",
+      "@type": "cr:FileObject",
+      "name": "conversations_training.csv",
+      "description": "Structured question-answer pairs with professional therapeutic responses covering common mental health scenarios and counseling dialogues."
+    },
+    {
+      "contentUrl": "dialogues_training.csv",
+      "containedIn": { "@id": "archive.zip" },
+      "encodingFormat": "text/csv",
+      "@id": "dialogues_training.csv_fileobject",
+      "@type": "cr:FileObject",
+      "name": "dialogues_training.csv",
+      "description": "Extended conversation flows and multi-turn dialogues demonstrating natural therapeutic conversation patterns and session management techniques."
+    },
+    {
+      "contentUrl": "mental_health_comprehensive.csv",
+      "containedIn": { "@id": "archive.zip" },
+      "encodingFormat": "text/csv",
+      "@id": "mental_health_comprehensive.csv_fileobject",
+      "@type": "cr:FileObject",
+      "name": "mental_health_comprehensive.csv",
+      "description": "Comprehensive collection of mental health scenarios with evidence-based responses covering CBT techniques, mindfulness practices, and coping strategies."
+    },
+    {
+      "contentUrl": "mental_health_conversations.csv",
+      "containedIn": { "@id": "archive.zip" },
+      "encodingFormat": "text/csv",
+      "@id": "mental_health_conversations.csv_fileobject",
+      "@type": "cr:FileObject",
+      "name": "mental_health_conversations.csv",
+      "description": "Real-world counseling session dialogues and peer support interactions with anonymized therapeutic conversations and crisis support examples."
+    },
+    {
+      "contentUrl": "reddit_mental_health_combined.csv",
+      "containedIn": { "@id": "archive.zip" },
+      "encodingFormat": "text/csv",
+      "@id": "reddit_mental_health_combined.csv_fileobject",
+      "@type": "cr:FileObject",
+      "name": "reddit_mental_health_combined.csv",
+      "description": "Anonymized community discussions from mental health subreddits including peer support, experience sharing, and wellness conversations."
+    },
+    {
+      "contentUrl": "sentiment_analysis.csv",
+      "containedIn": { "@id": "archive.zip" },
+      "encodingFormat": "text/csv",
+      "@id": "sentiment_analysis.csv_fileobject",
+      "@type": "cr:FileObject",
+      "name": "sentiment_analysis.csv",
+      "description": "Emotion-labeled dataset with sentiment scores and emotional context annotations for training empathy-aware conversational models."
+    }
+  ],
+  "recordSet": [
+    {
+      "field": [
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": { "@id": "conversations_training.csv_fileobject" },
+            "extract": { "column": "input" }
+          },
+          "@id": "conversations_training.csv/input",
+          "@type": "cr:Field",
+          "name": "input",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": { "@id": "conversations_training.csv_fileobject" },
+            "extract": { "column": "output" }
+          },
+          "@id": "conversations_training.csv/output",
+          "@type": "cr:Field",
+          "name": "output",
+          "description": ""
+        }
+      ],
+      "@id": "conversations_training.csv",
+      "@type": "cr:RecordSet",
+      "name": "conversations_training.csv",
+      "description": "Structured question-answer pairs with professional therapeutic responses covering common mental health scenarios and counseling dialogues."
+    },
+    {
+      "field": [
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": { "@id": "dialogues_training.csv_fileobject" },
+            "extract": { "column": "text" }
+          },
+          "@id": "dialogues_training.csv/text",
+          "@type": "cr:Field",
+          "name": "text",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": { "@id": "dialogues_training.csv_fileobject" },
+            "extract": { "column": "emotion" }
+          },
+          "@id": "dialogues_training.csv/emotion",
+          "@type": "cr:Field",
+          "name": "emotion",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": { "@id": "dialogues_training.csv_fileobject" },
+            "extract": { "column": "act" }
+          },
+          "@id": "dialogues_training.csv/act",
+          "@type": "cr:Field",
+          "name": "act",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Integer"],
+          "source": {
+            "fileObject": { "@id": "dialogues_training.csv_fileobject" },
+            "extract": { "column": "topic" }
+          },
+          "@id": "dialogues_training.csv/topic",
+          "@type": "cr:Field",
+          "name": "topic",
+          "description": ""
+        }
+      ],
+      "@id": "dialogues_training.csv",
+      "@type": "cr:RecordSet",
+      "name": "dialogues_training.csv",
+      "description": "Extended conversation flows and multi-turn dialogues demonstrating natural therapeutic conversation patterns and session management techniques."
+    },
+    {
+      "field": [
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Indicator" }
+          },
+          "@id": "mental_health_comprehensive.csv/Indicator",
+          "@type": "cr:Field",
+          "name": "Indicator",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Group" }
+          },
+          "@id": "mental_health_comprehensive.csv/Group",
+          "@type": "cr:Field",
+          "name": "Group",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "State" }
+          },
+          "@id": "mental_health_comprehensive.csv/State",
+          "@type": "cr:Field",
+          "name": "State",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Subgroup" }
+          },
+          "@id": "mental_health_comprehensive.csv/Subgroup",
+          "@type": "cr:Field",
+          "name": "Subgroup",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Float"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Phase" }
+          },
+          "@id": "mental_health_comprehensive.csv/Phase",
+          "@type": "cr:Field",
+          "name": "Phase",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Float"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Time Period" }
+          },
+          "@id": "mental_health_comprehensive.csv/Time\u002BPeriod",
+          "@type": "cr:Field",
+          "name": "Time Period",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Time Period Label" }
+          },
+          "@id": "mental_health_comprehensive.csv/Time\u002BPeriod\u002BLabel",
+          "@type": "cr:Field",
+          "name": "Time Period Label",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Date"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Time Period Start Date" }
+          },
+          "@id": "mental_health_comprehensive.csv/Time\u002BPeriod\u002BStart\u002BDate",
+          "@type": "cr:Field",
+          "name": "Time Period Start Date",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Date"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Time Period End Date" }
+          },
+          "@id": "mental_health_comprehensive.csv/Time\u002BPeriod\u002BEnd\u002BDate",
+          "@type": "cr:Field",
+          "name": "Time Period End Date",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Float"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Value" }
+          },
+          "@id": "mental_health_comprehensive.csv/Value",
+          "@type": "cr:Field",
+          "name": "Value",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Float"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Low CI" }
+          },
+          "@id": "mental_health_comprehensive.csv/Low\u002BCI",
+          "@type": "cr:Field",
+          "name": "Low CI"
+        },
+        {
+          "dataType": ["sc:Float"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "High CI" }
+          },
+          "@id": "mental_health_comprehensive.csv/High\u002BCI",
+          "@type": "cr:Field",
+          "name": "High CI"
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Confidence Interval" }
+          },
+          "@id": "mental_health_comprehensive.csv/Confidence\u002BInterval",
+          "@type": "cr:Field",
+          "name": "Confidence Interval"
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Quartile Range" }
+          },
+          "@id": "mental_health_comprehensive.csv/Quartile\u002BRange",
+          "@type": "cr:Field",
+          "name": "Quartile Range"
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "source" }
+          },
+          "@id": "mental_health_comprehensive.csv/source",
+          "@type": "cr:Field",
+          "name": "source"
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "text" }
+          },
+          "@id": "mental_health_comprehensive.csv/text",
+          "@type": "cr:Field",
+          "name": "text"
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "label" }
+          },
+          "@id": "mental_health_comprehensive.csv/label",
+          "@type": "cr:Field",
+          "name": "label"
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "Unnamed: 0" }
+          },
+          "@id": "mental_health_comprehensive.csv/Unnamed%3A\u002B0",
+          "@type": "cr:Field",
+          "name": "Unnamed: 0"
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_comprehensive.csv_fileobject"
+            },
+            "extract": { "column": "class" }
+          },
+          "@id": "mental_health_comprehensive.csv/class",
+          "@type": "cr:Field",
+          "name": "class"
+        }
+      ],
+      "@id": "mental_health_comprehensive.csv",
+      "@type": "cr:RecordSet",
+      "name": "mental_health_comprehensive.csv",
+      "description": "Comprehensive collection of mental health scenarios with evidence-based responses covering CBT techniques, mindfulness practices, and coping strategies."
+    },
+    {
+      "field": [
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_conversations.csv_fileobject"
+            },
+            "extract": { "column": "question" }
+          },
+          "@id": "mental_health_conversations.csv/question",
+          "@type": "cr:Field",
+          "name": "question",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_conversations.csv_fileobject"
+            },
+            "extract": { "column": "answer" }
+          },
+          "@id": "mental_health_conversations.csv/answer",
+          "@type": "cr:Field",
+          "name": "answer",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_conversations.csv_fileobject"
+            },
+            "extract": { "column": "source" }
+          },
+          "@id": "mental_health_conversations.csv/source",
+          "@type": "cr:Field",
+          "name": "source",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_conversations.csv_fileobject"
+            },
+            "extract": { "column": "source_dataset" }
+          },
+          "@id": "mental_health_conversations.csv/source_dataset",
+          "@type": "cr:Field",
+          "name": "source_dataset",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_conversations.csv_fileobject"
+            },
+            "extract": { "column": "statement" }
+          },
+          "@id": "mental_health_conversations.csv/statement",
+          "@type": "cr:Field",
+          "name": "statement",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "mental_health_conversations.csv_fileobject"
+            },
+            "extract": { "column": "status" }
+          },
+          "@id": "mental_health_conversations.csv/status",
+          "@type": "cr:Field",
+          "name": "status",
+          "description": ""
+        }
+      ],
+      "@id": "mental_health_conversations.csv",
+      "@type": "cr:RecordSet",
+      "name": "mental_health_conversations.csv",
+      "description": "Real-world counseling session dialogues and peer support interactions with anonymized therapeutic conversations and crisis support examples."
+    },
+    {
+      "field": [
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "reddit_mental_health_combined.csv_fileobject"
+            },
+            "extract": { "column": "id" }
+          },
+          "@id": "reddit_mental_health_combined.csv/id",
+          "@type": "cr:Field",
+          "name": "id",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "reddit_mental_health_combined.csv_fileobject"
+            },
+            "extract": { "column": "subreddit" }
+          },
+          "@id": "reddit_mental_health_combined.csv/subreddit",
+          "@type": "cr:Field",
+          "name": "subreddit",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "reddit_mental_health_combined.csv_fileobject"
+            },
+            "extract": { "column": "subreddit_type" }
+          },
+          "@id": "reddit_mental_health_combined.csv/subreddit_type",
+          "@type": "cr:Field",
+          "name": "subreddit_type",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "reddit_mental_health_combined.csv_fileobject"
+            },
+            "extract": { "column": "title" }
+          },
+          "@id": "reddit_mental_health_combined.csv/title",
+          "@type": "cr:Field",
+          "name": "title",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "reddit_mental_health_combined.csv_fileobject"
+            },
+            "extract": { "column": "text" }
+          },
+          "@id": "reddit_mental_health_combined.csv/text",
+          "@type": "cr:Field",
+          "name": "text",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "reddit_mental_health_combined.csv_fileobject"
+            },
+            "extract": { "column": "author" }
+          },
+          "@id": "reddit_mental_health_combined.csv/author",
+          "@type": "cr:Field",
+          "name": "author",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Integer"],
+          "source": {
+            "fileObject": {
+              "@id": "reddit_mental_health_combined.csv_fileobject"
+            },
+            "extract": { "column": "score" }
+          },
+          "@id": "reddit_mental_health_combined.csv/score",
+          "@type": "cr:Field",
+          "name": "score",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Float"],
+          "source": {
+            "fileObject": {
+              "@id": "reddit_mental_health_combined.csv_fileobject"
+            },
+            "extract": { "column": "created_utc" }
+          },
+          "@id": "reddit_mental_health_combined.csv/created_utc",
+          "@type": "cr:Field",
+          "name": "created_utc",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Integer"],
+          "source": {
+            "fileObject": {
+              "@id": "reddit_mental_health_combined.csv_fileobject"
+            },
+            "extract": { "column": "num_comments" }
+          },
+          "@id": "reddit_mental_health_combined.csv/num_comments",
+          "@type": "cr:Field",
+          "name": "num_comments",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "reddit_mental_health_combined.csv_fileobject"
+            },
+            "extract": { "column": "sentiment" }
+          },
+          "@id": "reddit_mental_health_combined.csv/sentiment",
+          "@type": "cr:Field",
+          "name": "sentiment",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": {
+              "@id": "reddit_mental_health_combined.csv_fileobject"
+            },
+            "extract": { "column": "category" }
+          },
+          "@id": "reddit_mental_health_combined.csv/category",
+          "@type": "cr:Field",
+          "name": "category"
+        }
+      ],
+      "@id": "reddit_mental_health_combined.csv",
+      "@type": "cr:RecordSet",
+      "name": "reddit_mental_health_combined.csv",
+      "description": "Anonymized community discussions from mental health subreddits including peer support, experience sharing, and wellness conversations."
+    },
+    {
+      "field": [
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": { "@id": "sentiment_analysis.csv_fileobject" },
+            "extract": { "column": "text" }
+          },
+          "@id": "sentiment_analysis.csv/text",
+          "@type": "cr:Field",
+          "name": "text",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Text"],
+          "source": {
+            "fileObject": { "@id": "sentiment_analysis.csv_fileobject" },
+            "extract": { "column": "source" }
+          },
+          "@id": "sentiment_analysis.csv/source",
+          "@type": "cr:Field",
+          "name": "source",
+          "description": ""
+        },
+        {
+          "dataType": ["sc:Integer"],
+          "source": {
+            "fileObject": { "@id": "sentiment_analysis.csv_fileobject" },
+            "extract": { "column": "label" }
+          },
+          "@id": "sentiment_analysis.csv/label",
+          "@type": "cr:Field",
+          "name": "label",
+          "description": ""
+        }
+      ],
+      "@id": "sentiment_analysis.csv",
+      "@type": "cr:RecordSet",
+      "name": "sentiment_analysis.csv",
+      "description": "Emotion-labeled dataset with sentiment scores and emotional context annotations for training empathy-aware conversational models."
+    }
+  ],
+  "version": 1,
+  "keywords": [
+    "subject \u003E health and fitness \u003E health \u003E health conditions \u003E mental health"
+  ],
+  "identifier": "10.34740/kaggle/dsv/12120624",
+  "isAccessibleForFree": true,
+  "includedInDataCatalog": {
+    "@type": "sc:DataCatalog",
+    "name": "Kaggle",
+    "url": "https://www.kaggle.com"
+  },
+  "creator": {
+    "@type": "sc:Person",
+    "name": "Nguyen Le Truong Thien",
+    "url": "/nguyenletruongthien",
+    "image": "https://storage.googleapis.com/kaggle-avatars/thumbnails/default-thumb.png"
+  },
+  "publisher": {
+    "@type": "sc:Organization",
+    "name": "Kaggle",
+    "url": "https://www.kaggle.com/organizations/kaggle",
+    "image": "https://storage.googleapis.com/kaggle-organizations/4/thumbnail.png"
+  },
+  "thumbnailUrl": "https://storage.googleapis.com/kaggle-datasets-images/7631914/12120624/c2c1bcd9afc91f47fe046017eb39d900/dataset-card.jpg?t=2025-06-20-08-38-11",
+  "dateModified": "2025-06-10T14:31:58.207",
+  "datePublished": "2025-06-20T08:37:21.2287346",
+  "@type": "sc:Dataset",
+  "name": "Mental Health Conversational AI Training Dataset",
+  "url": "https://www.kaggle.com/datasets/nguyenletruongthien/mental-health/versions/1",
+  "description": "This comprehensive mental health conversational dataset contains over 510,000\u002B professionally curated conversations, therapeutic dialogues, and support interactions designed for training empathetic AI systems. The dataset combines real-world counseling scenarios, community discussions, and synthetic conversations covering the full spectrum of mental health topics including anxiety, depression, crisis intervention, and wellness support. All content has been carefully anonymized, ethically reviewed, and formatted for immediate compatibility with popular machine learning frameworks including Hugging Face Transformers, OpenAI APIs, and custom language models. The dataset includes multiple file formats (CSV, JSON) and ready-to-use training splits optimized for fine-tuning conversational AI models, making it an invaluable resource for researchers, developers, and organizations building mental health support technologies while maintaining the highest standards of privacy, safety, and therapeutic appropriateness."
+}
