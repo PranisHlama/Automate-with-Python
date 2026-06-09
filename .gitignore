@@ -15,5 +15,5 @@ tasks.txt
 resume_parser/punkt_tab
 resume_parser/app.py
 
-*.csv
+# *.csv
 *.png
