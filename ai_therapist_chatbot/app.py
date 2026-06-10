@@ -229,3 +229,108 @@ for category in df[LABEL_COL].unique()[:5]:
     print(f"Sample: {sample[:300]}..." if len(sample) > 300 else f"Sample: {sample}")
     print("-" * 100)
 
+##### Feature Engineering #####
+
+# Text cleaning function
+def clean_text(text):
+    if not isinstance(text, str):
+        return ""
+    
+    text = text.lower()
+
+    text = re.sub(r'http\S+|www\S+', '', text)
+
+    text = re.sub(r'\S+@\S+', '', text)
+
+    text = re.sub(r'\s+', '', text).strip()
+
+    return text
+
+print("Cleaning text data")
+df['text_clean'] = df[TEXT_COL].apply(clean_text)
+
+print("\n Extracting linguistic features...")
+
+def extract_linguistic_features(text):
+    features = {}
+
+    features['word_count'] = len(text.split())
+    features['char_count'] = len(text)
+    features['avg_word_length'] = features['char_count'] / max(features['word_count'], 1)
+
+    features['exclamation_count'] = text.count('!')
+    features['question_count'] = text.count('?')
+    features['period_count'] = text.count('.')
+
+    upper_chars = sum(1 for c in text if c.isupper())
+    features['uppercase_ratio'] = upper_chars / max(len(text), 1)
+
+    # Sentiment analysis using TextBlob
+    try:
+        blob = TextBlob(text)
+        features['sentiment_polarity'] = blob.sentiment.polarity
+        features['sentiment_subjectivity'] = blob.sentiment.subjectivity
+    except:
+        features['sentiment_polarity'] = 0.0
+        features['sentiment_subjectivity'] = 0.5
+
+     # Crisis-related keywords (domain knowledge)
+    crisis_keywords = ['suicide', 'kill', 'die', 'death', 'hurt', 'harm', 'end it', 'hopeless', 'worthless']
+    features['crisis_keyword_count'] = sum(keyword in text.lower() for keyword in crisis_keywords)
+
+    # Anxiety related keywords
+    anxiety_keywords = ['anxiety', 'panic', 'worry', 'nervous', 'stress', 'fear', 'scared']
+    features['anxiety_keyword_count'] = sum(keyword in text.lower() for keyword in anxiety_keywords)
+
+    # Depression Related keywords
+    depression_keywords = ['depress', 'sad', 'empty', 'numb', 'tired', 'exhaust', 'hopeless']
+    features['depression_keyword_count'] = sum(keyword in text.lower() for keyword in depression_keywords)
+
+    return features
+
+# Extract features for all texts
+
+linguistic_features = df['text_clean'].apply(extract_linguistic_features)
+df_linguistic = pd.DataFrame(linguistic_features.tolist())
+
+
+# Combine with original dataframe
+df_feat = pd.concat([df.reset_index(drop=True), df_linguistic.reset_index(drop=True)], axis=1)
+
+print(f"Extracted {len(df_linguistic.columns)} linguistic features")
+print(f"\n Linguistic Features:")
+print(df_linguistic.describe().T)
+
+# TF-IDF TfidfVectorization
+print("\n Creating TF-IDF Features...")
+
+# Configure TF-IDF with optimized parameters
+tfidf = TfidfVectorizer(
+    max_features = 5000,
+    min_df=3,
+    max_df=0.8 ,
+    ngram_range=(1,2),
+    stop_words='english',
+    sublinear_tf=True
+)
+
+# Fit and Transform
+tfidf_matrix = tfidf.fit_transform(df_feat['text_clean'])
+print(f"TF-IDF matrix shape: {tfidf_matrix.shape}")
+
+n_components = 100
+print(f"\n Reading TF-IDF dimensions to {n_components} with SVD....")
+svd = TruncatedSVD(n_components = n_components, random_state = RANDOM_STATE)
+tfidf_reduced = svd.fit_transform(tfidf_matrix)
+
+explained_variance = svd.explained_variance_ratio_.sum()
+print(f"Explained Variance: {100*explained_variance: .2f}%")
+
+# Create TF-IDF feature dataframe
+tfidf_cols = [f'tfidf_{i}' for i in range(n_components)]
+df_tfidf = pd.DataFrame(tfidf_reduced, columns = tfidf_cols)
+
+# Combine all features
+df_feat = pd.concat([df_feat.reset_index(drop=True), df_tfidf.reset_index(drop=True)], axis=1)
+
+print(f"\n Total feature count: {len(df_linguistic.columns) + n_components}")
