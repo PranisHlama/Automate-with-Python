@@ -157,3 +157,75 @@ else:
     print("No suspicious cols found")
 
 print(f"Final dataset shape: {df.shape}")
+
+
+####### High Signal EDA ########
+
+# Target Distribution
+fig, axes = plt.subplots(1,2, figsize=(15,5))
+
+#Count Plot
+label_counts = df[LABEL_COL].value_counts()
+ax1 = axes[0]
+label_counts.plot(kind='bar', ax=ax1, color='steelblue', edgecolor='black')
+ax1.set_title('Target Distribution (Absolute Counts)', fontsize=14, fontweight='bold')
+ax1.set_xlabel('Mental Health Category', fontsize=12)
+ax1.set_ylabel('Count', fontsize=12)
+ax1.tick_params(axis='x', rotation=45)
+
+# Add percentile annotations
+total = len(df)
+for i, (label, count) in enumerate(label_counts.items()):
+    ax1.text(i, count, f'{100*count/total:.1f}%', ha='center', va='bottom', fontsize=10)
+
+# Proportion Plot
+ax2 = axes[1]
+label_pcts = 100 * label_counts / total
+colors = sns.color_palette('Set2', len(label_pcts))
+ax2.pie(label_pcts, labels=label_pcts.index, autopct='%1.1f%%', colors=colors, startangle=90)
+ax2.set_title('Target Distribution (Proportions)', fontsize=14, fontweight='bold')
+
+plt.tight_layout()
+plt.savefig("img/label_distribution.png", dpi=300, bbox_inches="tight")
+
+# Class Balance Check
+
+imbalance_ratio = label_counts.max() / label_counts.min()
+print(f"\n CLass Imbalance Ratio: {imbalance_ratio:.2f}")
+
+if imbalance_ratio > 3:
+    print("Significant class imbalance detected - will use stratified sampling and weighted metrics")
+else:
+    print("Classes are reasonably balanced")
+
+
+# Text length by Category
+fig, ax = plt.subplots(figsize=(12, 6))
+
+df.boxplot(column = 'text_length', by = LABEL_COL, ax=ax, patch_artist=True, 
+           boxprops=dict(facecolor='lightblue', color='black'),
+           medianprops=dict(color='red', linewidth=2))
+
+ax.set_title('Text Length Distribution by Mental Health Category', fontsize=14, fontweight='bold')
+ax.set_xlabel('Mental Health Category', fontsize=12)
+ax.set_ylabel('Text Length (characters)', fontsize=12)
+plt.suptitle('')  # Remove default title
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.savefig("img/text_length_dist.png", dpi=300, bbox_inches="tight")
+
+
+print("\nAverage Text Length by Category:")
+length_stats = df.groupby(LABEL_COL)['text_length'].agg(['mean', 'median', 'std'])
+print(length_stats.round(2))
+
+# Sample conversation from each category
+print("\n Sample Conversation by category: \n")
+print("=" * 100)
+
+for category in df[LABEL_COL].unique()[:5]:
+    sample = df[df[LABEL_COL] == category][TEXT_COL].iloc[0]
+    print(f"category: {category}")
+    print(f"Sample: {sample[:300]}..." if len(sample) > 300 else f"Sample: {sample}")
+    print("-" * 100)
+
