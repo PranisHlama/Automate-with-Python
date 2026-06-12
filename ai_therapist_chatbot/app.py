@@ -157,3 +157,180 @@ else:
     print("No suspicious cols found")
 
 print(f"Final dataset shape: {df.shape}")
+
+
+####### High Signal EDA ########
+
+# Target Distribution
+fig, axes = plt.subplots(1,2, figsize=(15,5))
+
+#Count Plot
+label_counts = df[LABEL_COL].value_counts()
+ax1 = axes[0]
+label_counts.plot(kind='bar', ax=ax1, color='steelblue', edgecolor='black')
+ax1.set_title('Target Distribution (Absolute Counts)', fontsize=14, fontweight='bold')
+ax1.set_xlabel('Mental Health Category', fontsize=12)
+ax1.set_ylabel('Count', fontsize=12)
+ax1.tick_params(axis='x', rotation=45)
+
+# Add percentile annotations
+total = len(df)
+for i, (label, count) in enumerate(label_counts.items()):
+    ax1.text(i, count, f'{100*count/total:.1f}%', ha='center', va='bottom', fontsize=10)
+
+# Proportion Plot
+ax2 = axes[1]
+label_pcts = 100 * label_counts / total
+colors = sns.color_palette('Set2', len(label_pcts))
+ax2.pie(label_pcts, labels=label_pcts.index, autopct='%1.1f%%', colors=colors, startangle=90)
+ax2.set_title('Target Distribution (Proportions)', fontsize=14, fontweight='bold')
+
+plt.tight_layout()
+plt.savefig("img/label_distribution.png", dpi=300, bbox_inches="tight")
+
+# Class Balance Check
+
+imbalance_ratio = label_counts.max() / label_counts.min()
+print(f"\n CLass Imbalance Ratio: {imbalance_ratio:.2f}")
+
+if imbalance_ratio > 3:
+    print("Significant class imbalance detected - will use stratified sampling and weighted metrics")
+else:
+    print("Classes are reasonably balanced")
+
+
+# Text length by Category
+fig, ax = plt.subplots(figsize=(12, 6))
+
+df.boxplot(column = 'text_length', by = LABEL_COL, ax=ax, patch_artist=True, 
+           boxprops=dict(facecolor='lightblue', color='black'),
+           medianprops=dict(color='red', linewidth=2))
+
+ax.set_title('Text Length Distribution by Mental Health Category', fontsize=14, fontweight='bold')
+ax.set_xlabel('Mental Health Category', fontsize=12)
+ax.set_ylabel('Text Length (characters)', fontsize=12)
+plt.suptitle('')  # Remove default title
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.savefig("img/text_length_dist.png", dpi=300, bbox_inches="tight")
+
+
+print("\nAverage Text Length by Category:")
+length_stats = df.groupby(LABEL_COL)['text_length'].agg(['mean', 'median', 'std'])
+print(length_stats.round(2))
+
+# Sample conversation from each category
+print("\n Sample Conversation by category: \n")
+print("=" * 100)
+
+for category in df[LABEL_COL].unique()[:5]:
+    sample = df[df[LABEL_COL] == category][TEXT_COL].iloc[0]
+    print(f"category: {category}")
+    print(f"Sample: {sample[:300]}..." if len(sample) > 300 else f"Sample: {sample}")
+    print("-" * 100)
+
+##### Feature Engineering #####
+
+# Text cleaning function
+def clean_text(text):
+    if not isinstance(text, str):
+        return ""
+    
+    text = text.lower()
+
+    text = re.sub(r'http\S+|www\S+', '', text)
+
+    text = re.sub(r'\S+@\S+', '', text)
+
+    text = re.sub(r'\s+', '', text).strip()
+
+    return text
+
+print("Cleaning text data")
+df['text_clean'] = df[TEXT_COL].apply(clean_text)
+
+print("\n Extracting linguistic features...")
+
+def extract_linguistic_features(text):
+    features = {}
+
+    features['word_count'] = len(text.split())
+    features['char_count'] = len(text)
+    features['avg_word_length'] = features['char_count'] / max(features['word_count'], 1)
+
+    features['exclamation_count'] = text.count('!')
+    features['question_count'] = text.count('?')
+    features['period_count'] = text.count('.')
+
+    upper_chars = sum(1 for c in text if c.isupper())
+    features['uppercase_ratio'] = upper_chars / max(len(text), 1)
+
+    # Sentiment analysis using TextBlob
+    try:
+        blob = TextBlob(text)
+        features['sentiment_polarity'] = blob.sentiment.polarity
+        features['sentiment_subjectivity'] = blob.sentiment.subjectivity
+    except:
+        features['sentiment_polarity'] = 0.0
+        features['sentiment_subjectivity'] = 0.5
+
+     # Crisis-related keywords (domain knowledge)
+    crisis_keywords = ['suicide', 'kill', 'die', 'death', 'hurt', 'harm', 'end it', 'hopeless', 'worthless']
+    features['crisis_keyword_count'] = sum(keyword in text.lower() for keyword in crisis_keywords)
+
+    # Anxiety related keywords
+    anxiety_keywords = ['anxiety', 'panic', 'worry', 'nervous', 'stress', 'fear', 'scared']
+    features['anxiety_keyword_count'] = sum(keyword in text.lower() for keyword in anxiety_keywords)
+
+    # Depression Related keywords
+    depression_keywords = ['depress', 'sad', 'empty', 'numb', 'tired', 'exhaust', 'hopeless']
+    features['depression_keyword_count'] = sum(keyword in text.lower() for keyword in depression_keywords)
+
+    return features
+
+# Extract features for all texts
+
+linguistic_features = df['text_clean'].apply(extract_linguistic_features)
+df_linguistic = pd.DataFrame(linguistic_features.tolist())
+
+
+# Combine with original dataframe
+df_feat = pd.concat([df.reset_index(drop=True), df_linguistic.reset_index(drop=True)], axis=1)
+
+print(f"Extracted {len(df_linguistic.columns)} linguistic features")
+print(f"\n Linguistic Features:")
+print(df_linguistic.describe().T)
+
+# TF-IDF TfidfVectorization
+print("\n Creating TF-IDF Features...")
+
+# Configure TF-IDF with optimized parameters
+tfidf = TfidfVectorizer(
+    max_features = 5000,
+    min_df=3,
+    max_df=0.8 ,
+    ngram_range=(1,2),
+    stop_words='english',
+    sublinear_tf=True
+)
+
+# Fit and Transform
+tfidf_matrix = tfidf.fit_transform(df_feat['text_clean'])
+print(f"TF-IDF matrix shape: {tfidf_matrix.shape}")
+
+n_components = 100
+print(f"\n Reading TF-IDF dimensions to {n_components} with SVD....")
+svd = TruncatedSVD(n_components = n_components, random_state = RANDOM_STATE)
+tfidf_reduced = svd.fit_transform(tfidf_matrix)
+
+explained_variance = svd.explained_variance_ratio_.sum()
+print(f"Explained Variance: {100*explained_variance: .2f}%")
+
+# Create TF-IDF feature dataframe
+tfidf_cols = [f'tfidf_{i}' for i in range(n_components)]
+df_tfidf = pd.DataFrame(tfidf_reduced, columns = tfidf_cols)
+
+# Combine all features
+df_feat = pd.concat([df_feat.reset_index(drop=True), df_tfidf.reset_index(drop=True)], axis=1)
+
+print(f"\n Total feature count: {len(df_linguistic.columns) + n_components}")
