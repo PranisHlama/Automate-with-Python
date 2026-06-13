@@ -192,4 +192,6 @@ text_column = "content"
 df[text_column] = df[text_column].astype(str)
 df[text_column] = df[text_column].str.lower()
 
-df.to_csv("./news_dataset/cleaned_fake_real_news.csv", index=False)
+### Only run once ###
+# df.to_csv("./news_dataset/cleaned_fake_real_news.csv", index=False)
+

@@ -1,4 +1,5 @@
 from mlcroissant import Dataset
+import pandas as pd
 
 file_path = "mental-health-metadata.json"
 ds = Dataset(jsonld=file_path)
@@ -13,3 +14,17 @@ for i, record in enumerate(records):
 
     if i>=4:
         break
+df = pd.DataFrame(records)
+
+df.drop(columns=["mental_health_conversations.csv/statement"])
+
+df.to_csv('mental_health_convo.csv')
+
+print(df.info())
+print(df.head())
+# print(df.sample(5))
+# print(f"Null values information, {df.isna().sum()}")
+
+# df.dropna()
+
+print(f"updated info: \n", df.info())
