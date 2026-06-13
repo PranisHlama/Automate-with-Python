@@ -34,11 +34,18 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 import lightgbm as lgb
 import xgboost as xgb
 
-# Logistic Regression
+# Logistic Regression(Baseline)
 from sklearn.linear_model import LogisticRegression
-
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, classification_report
 from sklearn.model_selection import cross_val_score, StratifiedKFold
+
+# Advanced Model: Random Forest
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, classification_report
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+
+# Advanced Model: XGBoost
+import xgboost as xgb
 
 # Configuration
 warnings.filterwarnings('ignore')
@@ -521,3 +528,136 @@ lr_result = {
 
 print("\n Logistic Regression complete!")
 print(lr_result)
+
+######### Random Forest #########
+rf_model = RandomForestClassifier(
+    n_estimators=200,
+    max_depth=20,
+    min_samples_split=10,
+    min_samples_leaf=4,
+    random_state=RANDOM_STATE,
+    n_jobs=1,
+    class_weight='balanced'
+)
+
+# Convert numeric classes to string for classification_report
+class_names = [str(cls) for cls in le_y.classes_]
+
+
+rf_model.fit(X_train, y_train)
+rf_y_pred = rf_model.predict(X_test)
+rf_y_proba = rf_model.predict_proba(X_test)
+
+print("="*80)
+print("Evaluating: Random Forest")
+print("="*80)
+
+# Test Metrics
+print("\n Test Metrics:")
+print(f"Accuracy: {accuracy_score(y_test, rf_y_pred):.4f}")
+print(f"Precision: {precision_score(y_test, rf_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"Recall: {recall_score(y_test, rf_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"F1-Score: {f1_score(y_test, rf_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"ROC-AUC {roc_auc_score(y_test, rf_y_proba, multi_class='ovr', average='macro'):.4f}")
+
+# Cross-Validation
+cv=StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
+cv_accuracy = cross_val_score(rf_model, X_train, y_train, cv=cv, scoring='accuracy')
+print(f"\n 5-Fold Cross Validation")
+print(f"CV Accuracy: {cv_accuracy.mean():.4f} + {cv_accuracy.std():.4f}")
+
+# Fixed Classification Report
+print("\n Classification Report:")
+print(classification_report(y_test, rf_y_pred, target_names=class_names, zero_division=0))
+
+rf_results= {
+    'Model': 'Random Forest',
+    'Accuracy': accuracy_score(y_test, rf_y_pred),
+    'Precision': precision_score(y_test, rf_y_pred, average='weighted', zero_division=0),
+    'Recall': recall_score(y_test, rf_y_pred, average='weighted', zero_division=0),
+    'F1_Macro': f1_score(y_test, rf_y_pred, average='macro', zero_division=0),
+    'F1_Weighted': f1_score(y_test, rf_y_pred, average='weighted', zero_division=0),
+    'ROC_AUC': roc_auc_score(y_test, rf_y_proba, multi_class='ovr', average='macro'),
+    'CV_F1_Mean': cross_val_score(rf_model, X_train, y_train, cv=cv, scoring='f1_macro').mean(),
+    'CV_F1_Std': cross_val_score(rf_model, X_train, y_train, cv=cv, scoring='f1_macro').std()
+}
+
+print("\n Random Forest Complete!")
+print(rf_results)
+
+
+############# LightGBM ############
+rf_model = RandomForestClassifier(
+    n_estimators=100,
+    max_depth=15,
+    min_samples_split=20,
+    min_samples_leaf=8,
+    random_state=RANDOM_STATE,
+    n_jobs=-1,
+    class_weight='balanced',
+    warm_start=True
+)
+
+class_names = [str(cls) for cls in le_y.classes_]
+
+print("Training Random Forest(fast)....")
+rf_model.fit(X_train, y_train)
+
+print("Predicting.....")
+rf_y_pred = rf_model.predict(X_test)
+rf_y_proba = rf_model.predict_proba(X_test)
+
+print("\n Random Forest Results")
+print(f"Accuracy: {accuracy_score(y_test, rf_y_pred):.4f}")
+print(f"F1-Weighted: {f1_score(y_test, rf_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"ROC-AUC: {roc_auc_score(y_test, rf_y_proba, multi_class='ovr', average='macro'):.4f}")
+
+rf_results = {
+    'Model': "Random Forest (Fast)",
+    'Accuracy': accuracy_score(y_test, rf_y_pred),
+    'F1_Weighted': f1_score(y_test, rf_y_pred, average='weighted', zero_division=0),
+    'ROC_AUC': roc_auc_score(y_test, rf_y_proba, multi_class='ovr', average='macro')
+}
+
+print('\n Random Forest FAST Complete!')
+print(rf_results)
+
+########### XGBoost #########
+n_classes = len(le_y.classes_)
+xgb_model = xgb.XGBClassifier(
+    objective='multi:softprob' if n_classes > 2 else 'binary:logistic',
+    eval_metric='mlogloss' if n_classes > 2 else 'logloss',
+    num_class=n_classes if n_classes > 2 else None,
+    n_estimators=100,     
+    learning_rate=0.1,    # Faster
+    max_depth=6,          # Shallower
+    subsample=0.8,
+    colsample_bytree=0.8,
+    tree_method='hist',
+    random_state=RANDOM_STATE,
+    n_jobs=-1,
+    verbosity=0
+)
+
+print("\n Training XGBoost (fast)..... ")
+xgb_model.fit(X_train, y_train)
+
+print("Predicting....")
+xgb_y_pred = xgb_model.predict(X_test)
+xgb_y_proba = xgb_model.predict_proba(X_test)
+
+# Quick metrics
+print("\n XGBoose Results:")
+print(f"Accuracy: {accuracy_score(y_test, xgb_y_pred):.4f}")
+print(f"F1-Weighted: {f1_score(y_test, xgb_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"ROC-AUC {roc_auc_score(y_test, xgb_y_proba, multi_class='ovr', average='macro'):.4f}")
+
+xgb_results = {
+    'Model': 'XGBoost (fast)',
+    'Accuracy': accuracy_score(y_test, xgb_y_pred),
+    'F1_Weighted': f1_score(y_test, xgb_y_pred, average='weighted', zero_division=0),
+    'ROC_AUC': roc_auc_score(y_test, xgb_y_proba, multi_class='ovr', average='macro')
+}
+
+print("\n XGBoose FAST Complete!")
+print(xgb_results)
