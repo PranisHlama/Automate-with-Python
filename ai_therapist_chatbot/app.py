@@ -392,3 +392,72 @@ X_test_scaled = scaler.transform(X_test)
 
 print("Feature scaling complete")
 print("REady for modeling")
+
+####### Evaluation Function
+
+def evaluate_model(model, X_tr, y_tr, X_te, y_te, model_name):
+    """
+    Comprehensive model evaluation with multiple metrics.
+    """
+    print(f"\n{'='*80}")
+    print(f"Evaluating: {model_name}")
+    print(f"{'='*80}")
+
+    # Model train
+    model.fit(X_tr, y_tr)
+
+    # Predictions
+    y_pred = model.predict(X_te)
+
+    # Metrics 
+    acc = accuracy_score(y_te, y_pred)
+    precision = precision_score(y_te, y_pred, average='weighted', zero_division=0)
+    recall = recall_score(y_te, y_pred, average='weighted', zero_division=0)
+    f1 = f1_score(y_te, y_pred, average='weighted', zero_division=0)
+
+    print(f"\n Test metrics:")
+    print(f"Accuracy: {acc:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1-Score: {f1:.4f}")
+
+    # ROC-AUC (if probability predictions available)
+    if hasattr(model, "predict_proba"):
+        y_pred_proba = model.predict_proba(X_te)
+        try:
+            roc_auc = roc_auc_score(y_te, y_pred_proba, multi_class='ovr', average='weighted')
+            print(f"ROC-AUC: {roc_auc:.4f}")
+        except:
+            roc_auc = None
+    else:
+        y_pred_proba = None
+        roc_auc = None
+
+    # Cross-Validation
+    print(f"\n 5-fold cross-validation")
+    cv_scores = cross_val_score(model, X_tr, y_tr, cv=5, scoring="accuracy", n_jobs=-1)
+    print(f"CV Accuracy: {cv_scores.mean():.4f} + {cv_scores.stf():.4f}")
+
+    # Classification Report
+    print(f"\n Classification Report:")
+    print(classification_report(y_te, y_pred, target_names=le_y.classes_, zero_division=0))
+
+    # Store results
+    results = {
+        'model_name': model_name,
+        'accuracy': acc,
+        'precision': precision,
+        'recall': recall,
+        'f1_score': f1,
+        'roc_auc': roc_auc,
+        'cv_mean': cv_scores.mean(),
+        'cv_std': cv_scores.std(),
+        'model': model,
+        'y_pred': y_pred,
+        'y_pred_proba': y_pred_proba
+    }
+
+    return results
+
+print("Evaluation Function ready")
+
