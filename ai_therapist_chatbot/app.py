@@ -34,6 +34,19 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 import lightgbm as lgb
 import xgboost as xgb
 
+# Logistic Regression(Baseline)
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, classification_report
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+
+# Advanced Model: Random Forest
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, classification_report
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+
+# Advanced Model: XGBoost
+import xgboost as xgb
+
 # Configuration
 warnings.filterwarnings('ignore')
 RANDOM_STATE = 42
@@ -334,3 +347,317 @@ df_tfidf = pd.DataFrame(tfidf_reduced, columns = tfidf_cols)
 df_feat = pd.concat([df_feat.reset_index(drop=True), df_tfidf.reset_index(drop=True)], axis=1)
 
 print(f"\n Total feature count: {len(df_linguistic.columns) + n_components}")
+
+######### Modeling Strategy ############
+# multi model approach with proper cross-validation and hyperparameter tuning
+
+print("Preparing modeling dataset....\n")
+
+# Select feature columns 
+exclude_cols = [TEXT_COL, LABEL_COL, 'text_clean', 'text_length']
+feature_cols = [col for col in df_feat.columns if col not in exclude_cols]
+
+X = df_feat[feature_cols].copy()
+
+print("Fixing categorical columns")
+
+object_cols = X.select_dtypes(include=['object']).columns.tolist()
+for col in object_cols:
+    try:
+        X[col] = pd.to_numeric(X[col], errors='raise')
+        print(f" {col} converted to numeric")
+    except:
+        print(f"One hot encoding {col}")
+        dummies = pd.get_dummies(X[col], prefix=col, drop_first=False)
+        X = pd.concat([X.drop(col, axis=1), dummies], axis=1)
+
+## Ensure all remaining are numeric
+numeric_X = X.select_dtypes(include=[np.number])
+print(f"Final numeric features: {len(numeric_X.columns)}")
+
+## Encode Target
+le_y = LabelEncoder()
+y = le_y.fit_transform(df_feat[LABEL_COL])
+
+print(f"Feature matrix shape: {numeric_X.shape}")
+print(f"Target shape: {y.shape}")
+print(f"Number of classes: {len(le_y.classes_)}")
+print(f"\n clas mapping:")
+for idx, label in enumerate(le_y.classes_):
+    print(f"{idx}: {label}")
+
+## Train test Split(Stratified)
+X_train, X_test, y_train, y_test = train_test_split(
+    numeric_X, y,
+    test_size=0.2,
+    random_state=RANDOM_STATE,
+    stratify = y
+)
+
+print(f"\n Train set size: {len(X_train)}")
+print(f"Test set size: {len(X_test):,}")
+
+## Feature scaling
+print("\n Scaling features...")
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+print("Feature scaling complete")
+print("REady for modeling")
+
+####### Evaluation Function
+
+def evaluate_model(model, X_tr, y_tr, X_te, y_te, model_name):
+    """
+    Comprehensive model evaluation with multiple metrics.
+    """
+    print(f"\n{'='*80}")
+    print(f"Evaluating: {model_name}")
+    print(f"{'='*80}")
+
+    # Model train
+    model.fit(X_tr, y_tr)
+
+    # Predictions
+    y_pred = model.predict(X_te)
+
+    # Metrics 
+    acc = accuracy_score(y_te, y_pred)
+    precision = precision_score(y_te, y_pred, average='weighted', zero_division=0)
+    recall = recall_score(y_te, y_pred, average='weighted', zero_division=0)
+    f1 = f1_score(y_te, y_pred, average='weighted', zero_division=0)
+
+    print(f"\n Test metrics:")
+    print(f"Accuracy: {acc:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1-Score: {f1:.4f}")
+
+    # ROC-AUC (if probability predictions available)
+    if hasattr(model, "predict_proba"):
+        y_pred_proba = model.predict_proba(X_te)
+        try:
+            roc_auc = roc_auc_score(y_te, y_pred_proba, multi_class='ovr', average='weighted')
+            print(f"ROC-AUC: {roc_auc:.4f}")
+        except:
+            roc_auc = None
+    else:
+        y_pred_proba = None
+        roc_auc = None
+
+    # Cross-Validation
+    print(f"\n 5-fold cross-validation")
+    cv_scores = cross_val_score(model, X_tr, y_tr, cv=5, scoring="accuracy", n_jobs=-1)
+    print(f"CV Accuracy: {cv_scores.mean():.4f} + {cv_scores.stf():.4f}")
+
+    # Classification Report
+    print(f"\n Classification Report:")
+    print(classification_report(y_te, y_pred, target_names=le_y.classes_, zero_division=0))
+
+    # Store results
+    results = {
+        'model_name': model_name,
+        'accuracy': acc,
+        'precision': precision,
+        'recall': recall,
+        'f1_score': f1,
+        'roc_auc': roc_auc,
+        'cv_mean': cv_scores.mean(),
+        'cv_std': cv_scores.std(),
+        'model': model,
+        'y_pred': y_pred,
+        'y_pred_proba': y_pred_proba
+    }
+
+    return results
+
+print("Evaluation Function ready")
+
+
+########## Logistic Regression (Baseline) #############
+
+lr_model = LogisticRegression(
+    max_iter=500,
+    random_state=RANDOM_STATE,
+    n_jobs=-1,
+    class_weight='balanced'
+)
+
+# Convert numeric classes to strings for classification_report
+class_names = [str(cls) for cls in le_y.classes_]
+
+lr_model.fit(X_train_scaled, y_train)
+lr_y_pred = lr_model.predict(X_test_scaled)
+lr_y_proba = lr_model.predict_proba(X_test_scaled)
+
+print("="*80)
+print(" Evaluating: Logistic Regression (Baseline)")
+print("="*80)
+
+# Test metrics
+print("\n Test Metrics:")
+print(f"Accuracy: {accuracy_score(y_test, lr_y_pred):.4f}")
+print(f"Precision: {precision_score(y_test, lr_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"Recall: {recall_score(y_test, lr_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"F1-Score: {f1_score(y_test, lr_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"ROC-AUC: {roc_auc_score(y_test, lr_y_proba, multi_class='ovr', average='macro'):.4f}")
+
+# Cross-Validation
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
+cv_accuracy = cross_val_score(lr_model, X_train_scaled, y_train, cv=cv, scoring='accuracy')
+print(f"5-fold Cross-Validation: ")
+print(f"CV Accuracy: {cv_accuracy.mean():.4f} + {cv_accuracy.std():.4f}")
+
+# Fixed Classification Report
+print("\n Classification Report:")
+print(classification_report(y_test, lr_y_pred, target_names=class_names, zero_division=0))
+
+lr_result = {
+    'Model': 'Logistic Regression(Baseline)',
+    'Accuracy': accuracy_score(y_test, lr_y_pred),
+    'Precision': precision_score(y_test, lr_y_pred, average='weighted', zero_division=0),
+    'Recall': recall_score(y_test, lr_y_pred, average='weighted', zero_division=0),
+    'F1_Macro': f1_score(y_test, lr_y_pred, average='macro', zero_division=0),
+    'F1_Weighted': f1_score(y_test, lr_y_pred, average='weighted', zero_division=0),
+    'ROC_AUC': roc_auc_score(y_test, lr_y_proba, multi_class='ovr', average='macro'),
+    'CV_F1_Mean': cross_val_score(lr_model, X_train_scaled, y_train, cv=cv, scoring='f1_macro').mean(),
+    'CV_F1_Std': cross_val_score(lr_model, X_train_scaled, y_train, cv=cv, scoring='f1_macro').std()
+}
+
+
+print("\n Logistic Regression complete!")
+print(lr_result)
+
+######### Random Forest #########
+rf_model = RandomForestClassifier(
+    n_estimators=200,
+    max_depth=20,
+    min_samples_split=10,
+    min_samples_leaf=4,
+    random_state=RANDOM_STATE,
+    n_jobs=1,
+    class_weight='balanced'
+)
+
+# Convert numeric classes to string for classification_report
+class_names = [str(cls) for cls in le_y.classes_]
+
+
+rf_model.fit(X_train, y_train)
+rf_y_pred = rf_model.predict(X_test)
+rf_y_proba = rf_model.predict_proba(X_test)
+
+print("="*80)
+print("Evaluating: Random Forest")
+print("="*80)
+
+# Test Metrics
+print("\n Test Metrics:")
+print(f"Accuracy: {accuracy_score(y_test, rf_y_pred):.4f}")
+print(f"Precision: {precision_score(y_test, rf_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"Recall: {recall_score(y_test, rf_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"F1-Score: {f1_score(y_test, rf_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"ROC-AUC {roc_auc_score(y_test, rf_y_proba, multi_class='ovr', average='macro'):.4f}")
+
+# Cross-Validation
+cv=StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
+cv_accuracy = cross_val_score(rf_model, X_train, y_train, cv=cv, scoring='accuracy')
+print(f"\n 5-Fold Cross Validation")
+print(f"CV Accuracy: {cv_accuracy.mean():.4f} + {cv_accuracy.std():.4f}")
+
+# Fixed Classification Report
+print("\n Classification Report:")
+print(classification_report(y_test, rf_y_pred, target_names=class_names, zero_division=0))
+
+rf_results= {
+    'Model': 'Random Forest',
+    'Accuracy': accuracy_score(y_test, rf_y_pred),
+    'Precision': precision_score(y_test, rf_y_pred, average='weighted', zero_division=0),
+    'Recall': recall_score(y_test, rf_y_pred, average='weighted', zero_division=0),
+    'F1_Macro': f1_score(y_test, rf_y_pred, average='macro', zero_division=0),
+    'F1_Weighted': f1_score(y_test, rf_y_pred, average='weighted', zero_division=0),
+    'ROC_AUC': roc_auc_score(y_test, rf_y_proba, multi_class='ovr', average='macro'),
+    'CV_F1_Mean': cross_val_score(rf_model, X_train, y_train, cv=cv, scoring='f1_macro').mean(),
+    'CV_F1_Std': cross_val_score(rf_model, X_train, y_train, cv=cv, scoring='f1_macro').std()
+}
+
+print("\n Random Forest Complete!")
+print(rf_results)
+
+
+############# LightGBM ############
+rf_model = RandomForestClassifier(
+    n_estimators=100,
+    max_depth=15,
+    min_samples_split=20,
+    min_samples_leaf=8,
+    random_state=RANDOM_STATE,
+    n_jobs=-1,
+    class_weight='balanced',
+    warm_start=True
+)
+
+class_names = [str(cls) for cls in le_y.classes_]
+
+print("Training Random Forest(fast)....")
+rf_model.fit(X_train, y_train)
+
+print("Predicting.....")
+rf_y_pred = rf_model.predict(X_test)
+rf_y_proba = rf_model.predict_proba(X_test)
+
+print("\n Random Forest Results")
+print(f"Accuracy: {accuracy_score(y_test, rf_y_pred):.4f}")
+print(f"F1-Weighted: {f1_score(y_test, rf_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"ROC-AUC: {roc_auc_score(y_test, rf_y_proba, multi_class='ovr', average='macro'):.4f}")
+
+rf_results = {
+    'Model': "Random Forest (Fast)",
+    'Accuracy': accuracy_score(y_test, rf_y_pred),
+    'F1_Weighted': f1_score(y_test, rf_y_pred, average='weighted', zero_division=0),
+    'ROC_AUC': roc_auc_score(y_test, rf_y_proba, multi_class='ovr', average='macro')
+}
+
+print('\n Random Forest FAST Complete!')
+print(rf_results)
+
+########### XGBoost #########
+n_classes = len(le_y.classes_)
+xgb_model = xgb.XGBClassifier(
+    objective='multi:softprob' if n_classes > 2 else 'binary:logistic',
+    eval_metric='mlogloss' if n_classes > 2 else 'logloss',
+    num_class=n_classes if n_classes > 2 else None,
+    n_estimators=100,     
+    learning_rate=0.1,    # Faster
+    max_depth=6,          # Shallower
+    subsample=0.8,
+    colsample_bytree=0.8,
+    tree_method='hist',
+    random_state=RANDOM_STATE,
+    n_jobs=-1,
+    verbosity=0
+)
+
+print("\n Training XGBoost (fast)..... ")
+xgb_model.fit(X_train, y_train)
+
+print("Predicting....")
+xgb_y_pred = xgb_model.predict(X_test)
+xgb_y_proba = xgb_model.predict_proba(X_test)
+
+# Quick metrics
+print("\n XGBoose Results:")
+print(f"Accuracy: {accuracy_score(y_test, xgb_y_pred):.4f}")
+print(f"F1-Weighted: {f1_score(y_test, xgb_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"ROC-AUC {roc_auc_score(y_test, xgb_y_proba, multi_class='ovr', average='macro'):.4f}")
+
+xgb_results = {
+    'Model': 'XGBoost (fast)',
+    'Accuracy': accuracy_score(y_test, xgb_y_pred),
+    'F1_Weighted': f1_score(y_test, xgb_y_pred, average='weighted', zero_division=0),
+    'ROC_AUC': roc_auc_score(y_test, xgb_y_proba, multi_class='ovr', average='macro')
+}
+
+print("\n XGBoose FAST Complete!")
+print(xgb_results)
