@@ -34,6 +34,12 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 import lightgbm as lgb
 import xgboost as xgb
 
+# Logistic Regression
+from sklearn.linear_model import LogisticRegression
+
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, classification_report
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+
 # Configuration
 warnings.filterwarnings('ignore')
 RANDOM_STATE = 42
@@ -461,3 +467,57 @@ def evaluate_model(model, X_tr, y_tr, X_te, y_te, model_name):
 
 print("Evaluation Function ready")
 
+
+########## Logistic Regression (Baseline) #############
+
+lr_model = LogisticRegression(
+    max_iter=500,
+    random_state=RANDOM_STATE,
+    n_jobs=-1,
+    class_weight='balanced'
+)
+
+# Convert numeric classes to strings for classification_report
+class_names = [str(cls) for cls in le_y.classes_]
+
+lr_model.fit(X_train_scaled, y_train)
+lr_y_pred = lr_model.predict(X_test_scaled)
+lr_y_proba = lr_model.predict_proba(X_test_scaled)
+
+print("="*80)
+print(" Evaluating: Logistic Regression (Baseline)")
+print("="*80)
+
+# Test metrics
+print("\n Test Metrics:")
+print(f"Accuracy: {accuracy_score(y_test, lr_y_pred):.4f}")
+print(f"Precision: {precision_score(y_test, lr_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"Recall: {recall_score(y_test, lr_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"F1-Score: {f1_score(y_test, lr_y_pred, average='weighted', zero_division=0):.4f}")
+print(f"ROC-AUC: {roc_auc_score(y_test, lr_y_proba, multi_class='ovr', average='macro'):.4f}")
+
+# Cross-Validation
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
+cv_accuracy = cross_val_score(lr_model, X_train_scaled, y_train, cv=cv, scoring='accuracy')
+print(f"5-fold Cross-Validation: ")
+print(f"CV Accuracy: {cv_accuracy.mean():.4f} + {cv_accuracy.std():.4f}")
+
+# Fixed Classification Report
+print("\n Classification Report:")
+print(classification_report(y_test, lr_y_pred, target_names=class_names, zero_division=0))
+
+lr_result = {
+    'Model': 'Logistic Regression(Baseline)',
+    'Accuracy': accuracy_score(y_test, lr_y_pred),
+    'Precision': precision_score(y_test, lr_y_pred, average='weighted', zero_division=0),
+    'Recall': recall_score(y_test, lr_y_pred, average='weighted', zero_division=0),
+    'F1_Macro': f1_score(y_test, lr_y_pred, average='macro', zero_division=0),
+    'F1_Weighted': f1_score(y_test, lr_y_pred, average='weighted', zero_division=0),
+    'ROC_AUC': roc_auc_score(y_test, lr_y_proba, multi_class='ovr', average='macro'),
+    'CV_F1_Mean': cross_val_score(lr_model, X_train_scaled, y_train, cv=cv, scoring='f1_macro').mean(),
+    'CV_F1_Std': cross_val_score(lr_model, X_train_scaled, y_train, cv=cv, scoring='f1_macro').std()
+}
+
+
+print("\n Logistic Regression complete!")
+print(lr_result)
