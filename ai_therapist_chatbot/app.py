@@ -334,3 +334,61 @@ df_tfidf = pd.DataFrame(tfidf_reduced, columns = tfidf_cols)
 df_feat = pd.concat([df_feat.reset_index(drop=True), df_tfidf.reset_index(drop=True)], axis=1)
 
 print(f"\n Total feature count: {len(df_linguistic.columns) + n_components}")
+
+######### Modeling Strategy ############
+# multi model approach with proper cross-validation and hyperparameter tuning
+
+print("Preparing modeling dataset....\n")
+
+# Select feature columns 
+exclude_cols = [TEXT_COL, LABEL_COL, 'text_clean', 'text_length']
+feature_cols = [col for col in df_feat.columns if col not in exclude_cols]
+
+X = df_feat[feature_cols].copy()
+
+print("Fixing categorical columns")
+
+object_cols = X.select_dtypes(include=['object']).columns.tolist()
+for col in object_cols:
+    try:
+        X[col] = pd.to_numeric(X[col], errors='raise')
+        print(f" {col} converted to numeric")
+    except:
+        print(f"One hot encoding {col}")
+        dummies = pd.get_dummies(X[col], prefix=col, drop_first=False)
+        X = pd.concat([X.drop(col, axis=1), dummies], axis=1)
+
+## Ensure all remaining are numeric
+numeric_X = X.select_dtypes(include=[np.number])
+print(f"Final numeric features: {len(numeric_X.columns)}")
+
+## Encode Target
+le_y = LabelEncoder()
+y = le_y.fit_transform(df_feat[LABEL_COL])
+
+print(f"Feature matrix shape: {numeric_X.shape}")
+print(f"Target shape: {y.shape}")
+print(f"Number of classes: {len(le_y.classes_)}")
+print(f"\n clas mapping:")
+for idx, label in enumerate(le_y.classes_):
+    print(f"{idx}: {label}")
+
+## Train test Split(Stratified)
+X_train, X_test, y_train, y_test = train_test_split(
+    numeric_X, y,
+    test_size=0.2,
+    random_state=RANDOM_STATE,
+    stratify = y
+)
+
+print(f"\n Train set size: {len(X_train)}")
+print(f"Test set size: {len(X_test):,}")
+
+## Feature scaling
+print("\n Scaling features...")
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+print("Feature scaling complete")
+print("REady for modeling")
