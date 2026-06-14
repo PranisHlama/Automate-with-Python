@@ -671,7 +671,7 @@ if 'rf_results' in locals():
 if 'xgb_results' in locals():
     models_results.append(xgb_results)
 
-print(f"Found {len(model_results)} model for comparision")
+print(f"Found {len(models_results)} model for comparision")
 
 comparision_df = pd.DataFrame([{
     'Model': r.get('Model', 'Unknown'),
