@@ -682,7 +682,7 @@ comparision_df = pd.DataFrame([{
 } for r in models_results])
 
 # Sort by Test Accuracy
-comparision_df = comparision_df.sort_values('Test Acc', ascending=False).round(4)
+comparison_df = comparision_df.sort_values('Test Acc', ascending=False).round(4)
 
 print('\n' + '='*60)
 print("Model Comparision (Fast versions)")
