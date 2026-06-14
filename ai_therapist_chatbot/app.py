@@ -513,7 +513,7 @@ print(f"CV Accuracy: {cv_accuracy.mean():.4f} + {cv_accuracy.std():.4f}")
 print("\n Classification Report:")
 print(classification_report(y_test, lr_y_pred, target_names=class_names, zero_division=0))
 
-lr_result = {
+lr_results = {
     'Model': 'Logistic Regression(Baseline)',
     'Accuracy': accuracy_score(y_test, lr_y_pred),
     'Precision': precision_score(y_test, lr_y_pred, average='weighted', zero_division=0),
@@ -527,7 +527,7 @@ lr_result = {
 
 
 print("\n Logistic Regression complete!")
-print(lr_result)
+print(lr_results)
 
 ######### Random Forest #########
 rf_model = RandomForestClassifier(
@@ -661,3 +661,43 @@ xgb_results = {
 
 print("\n XGBoose FAST Complete!")
 print(xgb_results)
+
+############ Model Comparision ##############
+models_results = []
+if 'lr_results' in locals():
+    models_results.append(lr_results)
+if 'rf_results' in locals():
+    models_results.append(rf_results)
+if 'xgb_results' in locals():
+    models_results.append(xgb_results)
+
+print(f"Found {len(model_results)} model for comparision")
+
+comparision_df = pd.DataFrame([{
+    'Model': r.get('Model', 'Unknown'),
+    'Test Acc': r.get('Accuracy', 0),
+    'F1-Weighted': r.get('F1_Weighted', r.get('F1_Weighted', 0)),
+    'ROC-AUC': r.get('ROC_AUC', 0),
+    'F1_Macro': r.get('F1_Macro', 0) if 'F1_Macro' in r else 0
+} for r in models_results])
+
+# Sort by Test Accuracy
+comparision_df = comparision_df.sort_values('Test Acc', ascending=False).round(4)
+
+print('\n' + '='*60)
+print("Model Comparision (Fast versions)")
+print("="*60)
+print(comparision_df.to_string(index=False))
+
+# Best model
+if len(comparison_df) > 0:
+    best_idx = comparison_df['Test Acc'].idxmax()
+    best_model = comparison_df.iloc[best_idx]
+    print(f"\n🥇 BEST: {best_model['Model']}")
+    print(f"   Test Acc: {best_model['Test Acc']:.4f}")
+    print(f"   F1: {best_model['F1-Weighted']:.4f}")
+    print(f"   ROC-AUC: {best_model['ROC-AUC']:.4f}")
+else:
+    print("\n❌ No model results found!")
+
+print("\n✅ Comparison complete!")
