@@ -51,6 +51,34 @@ class ToDoApp:
         print("-" * 50)
         print(f"Total Tasks: {len(self.tasks)}")
 
+    def update_task(self, task_number, new_task=None):
+        if not self.tasks:
+            print("No tasks found!")
+            return
+        
+        try:
+
+            if 1 <= task_number < len(self.tasks):
+                index = task_number - 1
+                old_task = self.tasks[index]
+
+                if not new_task.strip():
+                    print("Tasks cannot be empty")
+                    return
+                
+                timestamp = old_task[:18]
+                updated_task = f"{timestamp} {new_task.strip()}"
+                self.tasks[index] = updated_task
+                self.save_tasks()
+                print(f"Task updated: {old_task} -> {updated_task}")
+            else:
+                print(f"Invalid task number! Please choose between 1 and {len(self._tasks) + 1}")
+
+        except ValueError:
+            print("Please enter a valid number!")
+
+        
+
     def remove_task(self, task_number):
         try:
             if 1 <= task_number <= len(self.tasks):
@@ -81,8 +109,9 @@ class ToDoApp:
             print("1. View All Tasks")
             print("2. Add a new Tasks")
             print("3. Complete a Tasks")
-            print("4. Clear all Tasks")
-            print("5. Exit")
+            print("4. Update a Tasks")
+            print("5. Clear all Tasks")
+            print("6. Exit")
             print("=" * 30)
     
     def run(self):
@@ -92,7 +121,7 @@ class ToDoApp:
             self.display_menu()
 
             try:
-                choice = input("Enter your choice (1-5): ").strip()
+                choice = input("Enter your choice (1-6): ").strip()
 
                 if choice == '1':
                     self.view_tasks()
@@ -111,14 +140,24 @@ class ToDoApp:
                             print("Please enter a valid number!")
                     
                 elif choice == '4':
+                    self.view_tasks()
+                    if self.tasks:
+                        try:
+                            task_num = int(input("Enter task number to update: "))
+                            new_task = input("Enter updated task: ")
+                            self.update_task(task_num, new_task)
+                        except ValueError:
+                            print("Please enter a valid number!")
+                    
+                elif choice == '5':
                     self.clear_all_tasks()
                 
-                elif choice == '5':
+                elif choice == '6':
                     print("Thanks for using To-Do List CLI! Stay organized!")
                     sys.exit(0)
                 
                 else:
-                    print("Invalid choice! Please select 1-5.")
+                    print("Invalid choice! Please select 1-6.")
             except KeyboardInterrupt:
                 print("\n\n👋 Goodbye! Your tasks are safely saved.")
                 sys.exit(0)
