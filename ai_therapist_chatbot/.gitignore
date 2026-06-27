@@ -1,0 +1,35 @@
+# Python cache/build output
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Jupyter/IPython
+.ipynb_checkpoints/
+
+# Environment files
+.env
+.env.*
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local datasets and generated outputs
+dataset/
+mental_health_convo.csv
+img/
